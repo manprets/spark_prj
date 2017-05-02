@@ -24,4 +24,23 @@ claimant.groupBy($"uniq").count.show
 
 claimant.groupBy($"ssn").count.show
 
+// objective: assign rows with same ssn a unique key
+// Step 1: read claimant_data
+// Step 2: assign a unique key to ssn 
+// Step 3: assign this new key() to rows that match this ssn
+
+claimant.groupBy("ssn").count().show()
+
+claimant.createOrReplaceTempView("claimant_tbl")
+val sqlDF = spark.sql("select * from claimant_tbl")
+sqlDF.show()
+
+claimant.groupBy("ssn").min("uniq").show
+val claimant_kv = claimant.groupBy("ssn").min("uniq").withColumnRenamed("min(uniq)", "min_uniq")
+
+val claimant_kv = claimant.groupBy("ssn").min("uniq").withColumnRenamed("min(uniq)", "min_uniq").withColumnRenamed("ssn","ssn_uniq")
+
+val joined = claimant.join(claimant_kv,'ssn_uniq==='ssn,"inner").select("uniq","dim","ssn","min_uniq")
+
+
 
